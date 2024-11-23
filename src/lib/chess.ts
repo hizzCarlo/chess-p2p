@@ -64,7 +64,9 @@ export interface GameState {
         isEnPassant?: boolean;
         isCastling?: boolean;
         isPromotion?: boolean;
+        promotedTo?: string;
     } | null;
+    promotedPawns: Position[];
 }
 
 export function isValidMove(
@@ -72,7 +74,8 @@ export function isValidMove(
     from: Position,
     to: Position,
     board: string[][],
-    gameState: GameState
+    gameState: GameState,
+    skipKingCheck: boolean = false
 ): boolean {
     const dx = to.col - from.col;
     const dy = to.row - from.row;
@@ -108,6 +111,9 @@ export function isValidMove(
 
     if (!isBasicallyValid) return false;
 
+    // Skip king check validation if specified
+    if (skipKingCheck) return true;
+
     // Simulate the move and check if it would leave/put the king in check
     const newBoard = board.map(row => [...row]);
     newBoard[to.row][to.col] = board[from.row][from.col];
@@ -130,12 +136,8 @@ export function isValidMove(
         }
     }
 
-    // If king position wasn't found or the move would leave king in check
-    if (!kingPosition || isKingInCheck(newBoard, kingPosition, piece.color, gameState)) {
-        return false;
-    }
-
-    return true;
+    return kingPosition !== null && 
+           !isKingInCheck(newBoard, kingPosition, piece.color, gameState, true);
 }
 
 function isValidPawnMove(
@@ -335,21 +337,73 @@ export function isCheckmate(board: string[][], color: 'white' | 'black', gameSta
 }
 
 function isKingInCheck(
-    board: string[][], 
-    kingPosition: Position, 
-    kingColor: 'white' | 'black', 
-    gameState: GameState
+    board: string[][],
+    kingPosition: Position,
+    kingColor: 'white' | 'black',
+    gameState: GameState,
+    skipRecursion: boolean = false
 ): boolean {
+    // Basic move patterns for each piece type
+    const patterns = {
+        pawn: (row: number, col: number) => {
+            const direction = kingColor === 'white' ? 1 : -1;
+            return Math.abs(col - kingPosition.col) === 1 && 
+                   (kingPosition.row - row) === direction;
+        },
+        rook: (row: number, col: number) => {
+            return (row === kingPosition.row || col === kingPosition.col) &&
+                   isPathClear(board, {row, col}, kingPosition);
+        },
+        knight: (row: number, col: number) => {
+            const dx = Math.abs(col - kingPosition.col);
+            const dy = Math.abs(row - kingPosition.row);
+            return (dx === 2 && dy === 1) || (dx === 1 && dy === 2);
+        },
+        bishop: (row: number, col: number) => {
+            const dx = Math.abs(col - kingPosition.col);
+            const dy = Math.abs(row - kingPosition.row);
+            return dx === dy && isPathClear(board, {row, col}, kingPosition);
+        },
+        queen: (row: number, col: number) => {
+            const dx = Math.abs(col - kingPosition.col);
+            const dy = Math.abs(row - kingPosition.row);
+            return ((dx === dy) || (row === kingPosition.row || col === kingPosition.col)) &&
+                   isPathClear(board, {row, col}, kingPosition);
+        },
+        king: (row: number, col: number) => {
+            const dx = Math.abs(col - kingPosition.col);
+            const dy = Math.abs(row - kingPosition.row);
+            return dx <= 1 && dy <= 1;
+        }
+    };
+
+    // Helper function to check if path is clear
+    function isPathClear(board: string[][], from: Position, to: Position): boolean {
+        const dx = Math.sign(to.col - from.col);
+        const dy = Math.sign(to.row - from.row);
+        let x = from.col + dx;
+        let y = from.row + dy;
+
+        while (x !== to.col || y !== to.row) {
+            if (board[y][x] !== '') return false;
+            x += dx;
+            y += dy;
+        }
+        return true;
+    }
+
+    // Check for attacking pieces
     for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
             const piece = getPieceFromNotation(board[row][col]);
             if (piece && piece.color !== kingColor) {
-                if (isValidMove(piece, { row, col }, kingPosition, board, gameState)) {
+                if (patterns[piece.type](row, col)) {
                     return true;
                 }
             }
         }
     }
+    
     return false;
 }
 

@@ -16,7 +16,11 @@ class Get {
             SELECT m.*, 
                    w.name as white_player_name,
                    b.name as black_player_name,
-                   win.name as winner_name
+                   CASE 
+                       WHEN m.status = 'draw' THEN 'Draw'
+                       WHEN win.name IS NULL THEN ''
+                       ELSE win.name 
+                   END as winner_name
             FROM matches m
             LEFT JOIN players w ON m.white_player_id = w.id
             LEFT JOIN players b ON m.black_player_id = b.id
@@ -37,6 +41,7 @@ class Get {
                     w.name as white_player_name,
                     b.name as black_player_name,
                     CASE 
+                        WHEN m.status = 'draw' THEN 'Draw'
                         WHEN win.name IS NULL THEN ''
                         ELSE win.name 
                     END as winner_name
@@ -63,6 +68,46 @@ class Get {
             }
             
             return $results;
+            
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            throw new Exception("Database error occurred");
+        }
+    }
+    
+    public function getLeaderboard() {
+        try {
+            $stmt = $this->conn->query("
+                SELECT 
+                    id,
+                    name, 
+                    points,
+                    (
+                        SELECT COUNT(*) 
+                        FROM matches 
+                        WHERE (white_player_id = p.id OR black_player_id = p.id)
+                            AND status != 'ongoing'
+                    ) as games_played,
+                    (
+                        SELECT COUNT(*) 
+                        FROM matches 
+                        WHERE winner_id = p.id
+                    ) as wins,
+                    (
+                        SELECT COUNT(*) 
+                        FROM matches 
+                        WHERE (white_player_id = p.id OR black_player_id = p.id)
+                            AND status = 'draw'
+                    ) as draws
+                FROM players p
+                ORDER BY points DESC, wins DESC
+            ");
+            
+            if (!$stmt) {
+                throw new Exception("Failed to execute query");
+            }
+            
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
             
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage());

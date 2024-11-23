@@ -58,7 +58,16 @@ try {
                     break;
                 case 'match-end':
                     if (!isset($request[1])) throw new Exception("Match ID required");
-                    echo json_encode($update->endMatch($request[1], $data));
+                    try {
+                        $matchId = $request[1];
+                        echo json_encode($update->endMatch($matchId, $data));
+                    } catch (Exception $e) {
+                        http_response_code(500);
+                        echo json_encode([
+                            "status" => false,
+                            "error" => $e->getMessage()
+                        ]);
+                    }
                     break;
                 default:
                     throw new Exception("Invalid endpoint");
@@ -91,6 +100,9 @@ try {
                     break;
                 case 'matches':
                     echo json_encode($get->getMatchHistory());
+                    break;
+                case 'leaderboard':
+                    echo json_encode($get->getLeaderboard());
                     break;
                 default:
                     throw new Exception("Invalid endpoint");

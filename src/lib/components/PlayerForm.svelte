@@ -1,7 +1,9 @@
 <script>
     import { createEventDispatcher } from 'svelte';
+    import { goto } from '$app/navigation';
     
     export let players = [];
+    export let onPlayerAdded = () => {};
     const dispatch = createEventDispatcher();
     
     let newPlayerName = '';
@@ -21,20 +23,40 @@
         if (result.status) {
             players = [...players, { id: result.player_id, name: newPlayerName }];
             newPlayerName = '';
+            onPlayerAdded();
         }
     }
     
-    function startMatch() {
+    async function startMatch() {
         if (selectedWhite && selectedBlack && selectedWhite !== selectedBlack) {
-            dispatch('startMatch', {
-                white: selectedWhite,
-                black: selectedBlack
-            });
+            try {
+                // Create new match
+                const response = await fetch('http://localhost/frontend-final-project/api/match', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        white_player_id: selectedWhite,
+                        black_player_id: selectedBlack
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status && result.match_id) {
+                    // Navigate to the game page with the new match ID
+                    goto(`/game/${result.match_id}`);
+                } else {
+                    throw new Error('Failed to create match');
+                }
+            } catch (error) {
+                console.error('Error creating match:', error);
+                alert('Failed to create match. Please try again.');
+            }
         }
     }
 </script>
 
-<div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md min-h-[480px]">
     <h2 class="text-2xl mb-4">Player Selection</h2>
     
     <!-- Add New Player -->
@@ -47,7 +69,7 @@
         />
         <button
             on:click={addPlayer}
-            class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            class="mt-2 bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors"
         >
             Add Player
         </button>
@@ -84,7 +106,7 @@
         <button
             on:click={startMatch}
             disabled={!selectedWhite || !selectedBlack || selectedWhite === selectedBlack}
-            class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-300"
+            class="w-full bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 disabled:bg-secondary-300 transition-colors"
         >
             Start Match
         </button>

@@ -1,13 +1,16 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, createEventDispatcher } from 'svelte';
     import type { Position, Piece } from '$lib/chess';
     import { isValidMove, getPieceFromNotation, PIECE_SYMBOLS, handlePawnPromotion, isCheckmate, getPossibleMoves, isStalemate, hasInsufficientMaterial, isThreefoldRepetition, isFiftyMoveRule } from '$lib/chess';
     
-    export let matchId: string;
-    export let whitePlayerId: string = '1';
-    export let blackPlayerId: string = '2';
+    const dispatch = createEventDispatcher();
     
-    let board: string[][] = Array(8).fill(null).map(() => Array(8).fill(''));
+    export let matchId: string;
+    export let whitePlayerId: string;
+    export let blackPlayerId: string;
+    
+    export let board: string[][] = Array(8).fill(null).map(() => Array(8).fill(''));
+    export let gameState: GameState;
     let selectedSquare: Position | null = null;
     let moveHistory: string[] = [];
     let currentTurn: 'white' | 'black' = 'white';
@@ -18,7 +21,7 @@
                        'threefold repetition' | 'fifty-move rule' | null = null;
 
     // Initialize game state properly
-    let gameState: GameState = {
+    gameState = {
         board,
         moveHistory: [],
         currentTurn: 'white',
@@ -27,7 +30,8 @@
             black: { kingSide: true, queenSide: true }
         },
         enPassantTarget: null,
-        lastMove: null
+        lastMove: null,
+        promotedPawns: []
     };
 
     // Initialize the chess board
@@ -78,11 +82,13 @@
     }
 
     function checkGameEnd() {
-        // Check for checkmate
+        // Check for checkmate first
         if (isCheckmate(board, currentTurn, gameState)) {
             isGameOver = true;
+            // Set winner to the opposite of current turn
             winner = currentTurn === 'white' ? 'black' : 'white';
             gameEndReason = 'checkmate';
+            console.log('Checkmate detected. Winner:', winner); // Debug log
             updateMatchStatus();
             return;
         }
@@ -130,6 +136,7 @@
         let isEnPassant = false;
         let isCastling = false;
         let isPromotion = false;
+        let promotedPiece = '';
         
         // Handle castling
         if (pieceObj?.type === 'king' && Math.abs(to.col - from.col) === 2) {
@@ -168,16 +175,49 @@
             }
         }
         
-        // Make the move
-        board[to.row][to.col] = piece;
-        board[from.row][from.col] = '';
+        // Check if a piece was captured
+        const capturedPiece = board[to.row][to.col];
+        if (capturedPiece) {
+            // Check if the captured piece was a promoted pawn
+            const promotedPawn = gameState.promotedPawns.find(p => 
+                p.position.row === to.row && 
+                p.position.col === to.col
+            );
+            
+            if (promotedPawn) {
+                promotedPawn.captured = true;
+                promotedPawn.capturedBy = currentTurn;
+            }
+        }
         
         // Handle pawn promotion
         if (isPawnPromotion(to, piece)) {
-            const promotedPiece = await handlePawnPromotion(board, to, currentTurn);
-            board[to.row][to.col] = promotedPiece;
+            promotedPiece = await handlePawnPromotion(board, to, currentTurn);
             isPromotion = true;
+            board[to.row][to.col] = promotedPiece;
+            
+            gameState.promotedPawns.push({
+                position: to,
+                promotedTo: promotedPiece,
+                captured: false
+            });
+        } else {
+            board[to.row][to.col] = piece;
         }
+        
+        // Clear the original square
+        board[from.row][from.col] = '';
+        
+        // Update last move with promotion information
+        gameState.lastMove = { 
+            from, 
+            to, 
+            piece: isPromotion ? promotedPiece : piece,
+            isEnPassant,
+            isCastling,
+            isPromotion,
+            promotedTo: isPromotion ? promotedPiece : undefined
+        };
         
         // Update en passant target
         if (pieceObj?.type === 'pawn' && Math.abs(to.row - from.row) === 2) {
@@ -189,16 +229,6 @@
             gameState.enPassantTarget = null;
         }
         
-        // Update last move with special move flags
-        gameState.lastMove = { 
-            from, 
-            to, 
-            piece,
-            isEnPassant,
-            isCastling,
-            isPromotion
-        };
-        
         // Update castling rights
         updateCastlingRights(from, piece);
         
@@ -206,8 +236,15 @@
         currentTurn = currentTurn === 'white' ? 'black' : 'white';
         checkGameEnd();
         
-        // Add move to history
-        const moveNotation = generateMoveNotation(from, to, piece, isEnPassant, isCastling, isPromotion);
+        // Add move to history with the correct piece information
+        const moveNotation = generateMoveNotation(
+            from, 
+            to, 
+            isPromotion ? promotedPiece : piece,  // Use promoted piece if applicable
+            isEnPassant, 
+            isCastling, 
+            isPromotion
+        );
         moveHistory = [...moveHistory, moveNotation];
     }
 
@@ -241,36 +278,124 @@
         const pieceObj = getPieceFromNotation(piece);
         
         // Special notation for castling
-        if (pieceObj?.type === 'king' && Math.abs(to.col - from.col) === 2) {
+        if (isCastling) {
             return to.col > from.col ? 'O-O' : 'O-O-O';
         }
         
         // Convert coordinates to chess notation
         const files = 'abcdefgh';
         const ranks = '87654321';
-        const pieceSymbol = piece.toUpperCase() === piece ? piece.toUpperCase() : piece.toLowerCase();
         const fromSquare = `${files[from.col]}${ranks[from.row]}`;
         const toSquare = `${files[to.col]}${ranks[to.row]}`;
         
-        // Add capture symbol if there's a piece at the destination
-        const isCapture = board[to.row][to.col] !== '' ? 'x' : '-';
+        // Determine if it's a capture move
+        const isCapture = board[to.row][to.col] !== '' || isEnPassant;
+        const separator = isCapture ? 'x' : '-';  // Fixed separator logic
         
-        // Return formatted move notation with separators
-        return `${pieceSymbol}${fromSquare} ${isCapture} ${toSquare}`;
+        // Build basic move notation
+        let notation = '';
+        
+        // Add piece symbol for non-pawns
+        if (pieceObj && pieceObj.type !== 'pawn') {
+            notation += piece.toUpperCase();
+        }
+        
+        // Add from square
+        notation += fromSquare;
+        
+        // Add separator and to square
+        notation += ` ${separator} ${toSquare}`;
+        
+        // Add promotion notation if applicable
+        if (isPromotion) {
+            const promotedPiece = board[to.row][to.col];
+            notation += `=${promotedPiece.toUpperCase()}`;
+        }
+        
+        // Add en passant notation
+        if (isEnPassant) {
+            notation += ' e.p.';
+        }
+        
+        return notation;
     }
 
     async function updateMatchStatus() {
-        if (winner) {
+        if (isGameOver && winner) {  // Check both isGameOver and winner
             try {
-                await fetch(`http://localhost/frontend-final-project/api/match-end/${matchId}`, {
+                console.log('Game Over. Winner:', winner); // Debug log
+                console.log('Player IDs - White:', whitePlayerId, 'Black:', blackPlayerId); // Debug log
+
+                let payload;
+                
+                if (winner === 'draw') {
+                    payload = {
+                        is_draw: true,
+                        game_state: {
+                            board,
+                            moveHistory,
+                            currentTurn,
+                            castlingRights: gameState.castlingRights,
+                            enPassantTarget: gameState.enPassantTarget,
+                            lastMove: gameState.lastMove,
+                            gameEndReason
+                        }
+                    };
+                } else {
+                    // Ensure winner is either 'white' or 'black'
+                    if (winner !== 'white' && winner !== 'black') {
+                        console.error('Invalid winner value:', winner);
+                        throw new Error(`Invalid winner state: ${winner}`);
+                    }
+
+                    // Get the correct player ID based on winner
+                    const winnerId = winner === 'white' ? parseInt(whitePlayerId) : parseInt(blackPlayerId);
+                    
+                    if (!winnerId || isNaN(winnerId)) {
+                        console.error('Invalid winner ID:', winnerId);
+                        throw new Error('Invalid winner ID');
+                    }
+
+                    payload = {
+                        winner_id: winnerId,
+                        game_state: {
+                            board,
+                            moveHistory,
+                            currentTurn,
+                            castlingRights: gameState.castlingRights,
+                            enPassantTarget: gameState.enPassantTarget,
+                            lastMove: gameState.lastMove,
+                            gameEndReason
+                        }
+                    };
+                }
+
+                console.log('Sending payload:', payload); // Debug log
+
+                const response = await fetch(`http://localhost/frontend-final-project/api/match-end/${matchId}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        winner_id: winner === 'white' ? whitePlayerId : blackPlayerId
-                    })
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to update match status');
+                }
+
+                dispatch('gameOver', {
+                    winner,
+                    reason: gameEndReason
+                });
+
             } catch (error) {
                 console.error('Error updating match status:', error);
+                dispatch('error', {
+                    message: error.message
+                });
             }
         }
     }
