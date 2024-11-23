@@ -8,7 +8,6 @@ const config = {
 			$lib: './src/lib'
 		}
 	},
-
 };
 
 export default config;
