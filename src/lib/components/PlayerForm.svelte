@@ -43,8 +43,10 @@
                 const result = await response.json();
                 
                 if (result.status && result.match_id) {
+                    // Use base path from environment
+                    const basePath = process.env.NODE_ENV === 'production' ? '/chess-p2p' : '';
                     // Navigate to the game page with the new match ID
-                    goto(`/game/${result.match_id}`);
+                    goto(`${basePath}/game/${result.match_id}`);
                 } else {
                     throw new Error('Failed to create match');
                 }

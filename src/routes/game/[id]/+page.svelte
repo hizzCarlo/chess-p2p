@@ -55,8 +55,10 @@
             
             const result = await response.json();
             if (result.status && result.match_id) {
+                // Use base path from environment
+                const basePath = process.env.NODE_ENV === 'production' ? '/chess-p2p' : '';
                 // Navigate to the new match
-                await goto(`/game/${result.match_id}`);
+                await goto(`${basePath}/game/${result.match_id}`);
                 // Reload the page to ensure fresh state
                 window.location.reload();
             } else {
@@ -88,8 +90,9 @@
             }
         }
 
-        // Always navigate back home
-        await goto('/');
+        // Always navigate back home with the correct base path
+        const basePath = process.env.NODE_ENV === 'production' ? '/chess-p2p' : '';
+        await goto(`${basePath}/`);
     }
 
     function handleGameOver(event: CustomEvent) {
