@@ -18,7 +18,7 @@
 
     async function loadMatchData() {
         try {
-            const response = await fetch(`http://localhost/api/match/${matchId}`);
+            const response = await fetch(`https://www.formalytics.me/api-chess/match/${matchId}`);
             if (!response.ok) throw new Error('Failed to load match data');
             
             const matchData = await response.json();
@@ -46,7 +46,7 @@
             await goto(`${basePath}/`);
 
             // Then create new match with swapped colors
-            const response = await fetch('http://localhost/api/match', {
+            const response = await fetch('https://www.formalytics.me/api-chess/match', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -73,7 +73,7 @@
     async function handleBack() {
         if (!gameEnded) {  // Only try to end the match if it's not already ended
             try {
-                const response = await fetch(`http://localhost/api/match-end/${matchId}`, {
+                const response = await fetch(`https://www.formalytics.me/api-chess/match-end/${matchId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

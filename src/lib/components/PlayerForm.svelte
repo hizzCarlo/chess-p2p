@@ -13,7 +13,7 @@
     async function addPlayer() {
         if (!newPlayerName.trim()) return;
         
-        const response = await fetch('http://localhost/api/player', {
+        const response = await fetch('https://www.formalytics.me/api-chess/player', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: newPlayerName })
@@ -31,7 +31,7 @@
         if (selectedWhite && selectedBlack && selectedWhite !== selectedBlack) {
             try {
                 // Create new match
-                const response = await fetch('http://localhost/api/match', {
+                const response = await fetch('https://www.formalytics.me/api-chess/match', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

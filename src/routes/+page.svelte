@@ -11,14 +11,14 @@
     let leaderboardComponent;
     
     onMount(async () => {
-        const response = await fetch('http://localhost/api/players');
+        const response = await fetch('https://www.formalytics.me/api-chess/players');
         players = await response.json();
     });
     
     async function handleMatchStart(event) {
         const { white, black } = event.detail;
         try {
-            const response = await fetch('http://localhost/api/match', {
+            const response = await fetch('https://www.formalytics.me/api-chess/match', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
