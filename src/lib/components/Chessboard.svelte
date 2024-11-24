@@ -405,10 +405,12 @@
     });
 </script>
 
-<div class="flex flex-col md:flex-row gap-8 items-start chessboard-container">
-    <div class="flex-1">
+<div class="flex flex-col md:flex-row gap-8 items-start chessboard-container {isMoveHistoryCollapsed ? 'history-collapsed' : ''}">
+    <div class="flex-1 transition-all duration-300 ease-in-out">
         <!-- Chessboard -->
-        <div class="max-w-[680px] w-full mx-auto">
+        <div class="w-full mx-auto transition-all duration-300 ease-in-out" 
+             class:max-w-[calc(100vh-200px)]={!isMoveHistoryCollapsed} 
+             class:max-w-[calc(100vh-100px)]={isMoveHistoryCollapsed}>
             <!-- Files (a-h) labels top -->
             <div class="grid grid-cols-[8%_repeat(8,1fr)] mb-1">
                 <div></div>
@@ -509,20 +511,20 @@
         </div>
     </div>
 
-    <!-- Move History - Modified for responsive layout -->
-    <div class="w-full md:w-64 bg-white p-4 rounded-lg shadow mt-4 md:mt-0">
+    <!-- Move History - Modified to be more compact -->
+    <div class="w-full md:w-64 lg:w-80 bg-white p-4 rounded-lg shadow mt-4 md:mt-0 transition-all duration-300 flex-shrink-0">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold">Move History</h2>
-            <!-- Optional: Add a collapse/expand button for mobile -->
             <button 
-                class="md:hidden text-gray-500 hover:text-gray-700"
+                class="text-gray-500 hover:text-gray-700"
                 on:click={() => {
+                    isMoveHistoryCollapsed = !isMoveHistoryCollapsed;
                     const history = document.querySelector('.move-history');
                     history?.classList.toggle('h-0');
                     history?.classList.toggle('h-[200px]');
                 }}
             >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform duration-300 {isMoveHistoryCollapsed ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
@@ -559,7 +561,7 @@
   .chess-piece {
       font-family: 'Noto Chess', sans-serif;
       /* Adjust font size to match tile size */
-      font-size: clamp(2rem, min(4vw, 4vh), 3.5rem);
+      font-size: clamp(2rem, 5vmin, 4rem);
       line-height: 1;
       height: 100%;
       display: flex;
@@ -685,7 +687,8 @@
   /* Adjust the container on mobile */
   @media (max-width: 768px) {
       .chessboard-container {
-          padding: 0 1rem;
+          padding: 0.5rem;
+          
       }
 
       .move-history {
@@ -725,6 +728,9 @@
   .chessboard-container {
       position: relative;
       z-index: 1;
+      padding: 1rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
   }
 
   /* Make pieces stand out more but stay below modal */
@@ -738,5 +744,68 @@
   .capture-indicator,
   .selected-square::before {
       z-index: 3;
+  }
+
+  /* Ensure the board stays proportional on different screens */
+  @media (max-width: 768px) {
+      .chessboard-container {
+          padding: 0.5rem;
+      }
+      
+      .chess-piece {
+          font-size: clamp(2rem, min(4.5vw, 4.5vh), 3.5rem);
+      }
+  }
+
+  /* Add these new styles */
+  .chessboard-container {
+      transition: all 0.3s ease-in-out;
+  }
+
+  .history-collapsed .chess-piece {
+      font-size: clamp(2.5rem, 6vmin, 4.5rem); /* Larger pieces when history is collapsed */
+  }
+
+  @media (max-width: 768px) {
+      .history-collapsed .chess-piece {
+          font-size: clamp(2.5rem, min(5.5vw, 5.5vh), 4rem);
+      }
+
+      .move-history {
+          transition: height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+      }
+
+      .history-collapsed .move-history {
+          opacity: 0;
+          pointer-events: none;
+      }
+
+      /* Center the board when history is collapsed */
+      .history-collapsed .flex-1 {
+          margin: 0 auto;
+          max-width: 100%;
+      }
+  }
+
+  /* Add responsive container styles */
+  .chessboard-container {
+      height: calc(100vh - 200px);
+      min-height: 400px;
+  }
+
+  /* Make the board expand in collapsed state */
+  .history-collapsed .chess-piece {
+      font-size: clamp(2.5rem, 6vmin, 4.5rem);
+  }
+
+  @media (max-width: 768px) {
+      .chessboard-container {
+          height: auto;
+          min-height: 300px;
+      }
+
+      .chess-piece {
+          font-size: clamp(1.8rem, 8vmin, 3.5rem);
+      }
   }
 </style>

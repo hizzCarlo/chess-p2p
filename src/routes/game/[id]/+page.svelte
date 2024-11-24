@@ -165,160 +165,194 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Chess&display=swap');
 
+    /* Enhanced container responsiveness */
+    .game-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: clamp(0.5rem, 2vw, 2rem);
+    }
+
+    /* Improved player info cards */
+    .player-card {
+        background: var(--card-bg, white);
+        color: var(--card-text, black);
+        padding: clamp(0.5rem, 2vw, 1rem);
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 300px;
+        transition: transform 0.2s ease;
+    }
+
+    .player-card:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Enhanced captured pieces display */
     .captured-pieces {
-        min-height: 2rem;
-        display: flex;
-        gap: clamp(0.25rem, 1vw, 0.5rem);
-        align-items: center;
-        flex-wrap: wrap;
-        justify-content: center;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(1.5rem, 1fr));
+        gap: clamp(0.125rem, 0.5vw, 0.25rem);
         padding: clamp(0.25rem, 1vw, 0.5rem);
+        min-height: 2.5rem;
+        align-items: center;
+        justify-items: center;
     }
 
     .captured-piece {
         font-family: 'Noto Chess', sans-serif;
-        font-size: clamp(1rem, 3vw, 2rem);
-        transform: scale(1.1);
-        transition: transform 0.2s ease-in-out;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+        font-size: clamp(1rem, 3vmin, 1.5rem);
+        line-height: 1;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* Improved piece shadows */
     .captured-piece.white {
         color: #fff;
         text-shadow: 
-            0 0 2px #000,
-            0 0 4px #000,
-            0 0 6px #000;
+            0 0 2px rgba(0, 0, 0, 0.8),
+            0 0 4px rgba(0, 0, 0, 0.6),
+            0 0 6px rgba(0, 0, 0, 0.4);
     }
 
     .captured-piece.black {
         color: #000;
         text-shadow: 
-            0 0 2px #555,
-            0 0 4px #555;
+            0 0 2px rgba(85, 85, 85, 0.8),
+            0 0 4px rgba(85, 85, 85, 0.6);
     }
 
-    .captured-piece:hover {
-        transform: scale(1.15);
-        opacity: 0.8;
-    }
-
-    /* Add responsive container adjustments */
+    /* Enhanced responsive layout */
     @media (max-width: 768px) {
-        :global(.container) {
-            padding-left: 0.5rem;
-            padding-right: 0.5rem;
+        .player-info-container {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .vs-divider {
+            flex-direction: row;
+            width: 100%;
+            justify-content: center;
+            padding: 0.5rem 0;
+        }
+
+        .captured-pieces {
+            grid-template-columns: repeat(auto-fit, minmax(1.25rem, 1fr));
         }
     }
+
+    /* Rest of your existing styles... */
 </style>
 
-<div class="min-h-screen bg-gray-100 py-4 md:py-8">
-    <div class="container mx-auto px-2 md:px-4">
-        <div class="flex justify-between items-center mb-8">
-            <button 
-                on:click={handleBack}
-                class="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-                </svg>
-                Back to Home
-            </button>
-            <h1 class="text-4xl font-bold text-center text-gray-800">Chess Game</h1>
-            {#if gameEnded}
+<div class="game-container">
+    <div class="min-h-screen bg-gray-100 py-4 md:py-8">
+        <div class="container mx-auto px-2 md:px-4 max-w-[1200px]">
+            <div class="flex justify-between items-center mb-8">
                 <button 
-                    on:click={handleRematch}
-                    disabled={rematchLoading}
-                    class="flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:bg-emerald-400 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-md"
+                    on:click={handleBack}
+                    class="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 >
-                    {#if rematchLoading}
-                        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span>Starting Rematch...</span>
-                    {:else}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-                        </svg>
-                        <span>Rematch</span>
-                    {/if}
-                </button>
-            {:else}
-                <div class="w-[132px]"></div> <!-- Adjusted spacer width to match button width -->
-            {/if}
-        </div>
-        
-        {#if error}
-            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded shadow-sm">
-                <div class="flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                     </svg>
-                    {error}
+                    Back to Home
+                </button>
+                <h1 class="text-4xl font-bold text-center text-gray-800">Chess Game</h1>
+                {#if gameEnded}
+                    <button 
+                        on:click={handleRematch}
+                        disabled={rematchLoading}
+                        class="flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:bg-emerald-400 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-md"
+                    >
+                        {#if rematchLoading}
+                            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Starting Rematch...</span>
+                        {:else}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Rematch</span>
+                        {/if}
+                    </button>
+                {:else}
+                    <div class="w-[132px]"></div> <!-- Adjusted spacer width to match button width -->
+                {/if}
+            </div>
+            
+            {#if error}
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded shadow-sm">
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        {error}
+                    </div>
                 </div>
-            </div>
-        {:else if loading}
-            <div class="flex justify-center items-center space-x-2">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                <span class="text-gray-600">Loading game data...</span>
-            </div>
-        {:else}
-            <div class="bg-white rounded-lg shadow-lg p-2 md:p-6">
-                <div class="mb-4 text-center">
-                    <div class="flex flex-col md:flex-row justify-between items-center px-2 md:px-8 gap-4">
-                        <!-- White Player Info -->
-                        <div class="flex flex-col items-center space-y-2 w-full md:w-auto">
-                            <div class="text-base md:text-lg font-semibold bg-white shadow-md rounded-lg p-2 md:p-3 border border-gray-200 w-full md:w-auto">
-                                <span class="flex items-center gap-2 justify-center md:justify-start">
-                                    <span class="text-xl md:text-2xl">♔</span>
-                                    <span>{whitePlayerName}</span>
-                                </span>
+            {:else if loading}
+                <div class="flex justify-center items-center space-x-2">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    <span class="text-gray-600">Loading game data...</span>
+                </div>
+            {:else}
+                <div class="bg-white rounded-lg shadow-lg p-2 md:p-6">
+                    <div class="mb-4 text-center">
+                        <div class="flex flex-col md:flex-row justify-between items-center px-2 md:px-8 gap-4">
+                            <!-- White Player Info -->
+                            <div class="flex flex-col items-center space-y-2 w-full md:w-auto min-w-[200px]">
+                                <div class="text-base md:text-lg font-semibold bg-white shadow-md rounded-lg p-2 md:p-3 border border-gray-200 w-full md:w-auto">
+                                    <span class="flex items-center gap-2 justify-center md:justify-start">
+                                        <span class="text-xl md:text-2xl">♔</span>
+                                        <span>{whitePlayerName}</span>
+                                    </span>
+                                </div>
+                                <div class="captured-pieces">
+                                    {#if board}
+                                        {#each getCapturedPieces('black', board) as piece}
+                                            <span class="captured-piece black">{PIECE_SYMBOLS.black[piece]}</span>
+                                        {/each}
+                                    {/if}
+                                </div>
                             </div>
-                            <div class="captured-pieces">
-                                {#if board}
-                                    {#each getCapturedPieces('black', board) as piece}
-                                        <span class="captured-piece black">{PIECE_SYMBOLS.black[piece]}</span>
-                                    {/each}
-                                {/if}
-                            </div>
-                        </div>
 
-                        <!-- VS Divider -->
-                        <div class="flex md:flex-col items-center">
-                            <span class="text-lg md:text-xl font-bold text-gray-400">VS</span>
-                            <div class="h-0.5 w-12 md:h-12 md:w-0.5 bg-gray-300 mx-2 md:my-2"></div>
-                        </div>
-
-                        <!-- Black Player Info -->
-                        <div class="flex flex-col items-center space-y-2 w-full md:w-auto">
-                            <div class="text-base md:text-lg font-semibold bg-black text-white shadow-md rounded-lg p-2 md:p-3 w-full md:w-auto">
-                                <span class="flex items-center gap-2 justify-center md:justify-start">
-                                    <span class="text-xl md:text-2xl">♔</span>
-                                    <span>{blackPlayerName}</span>
-                                </span>
+                            <!-- VS Divider -->
+                            <div class="flex md:flex-col items-center">
+                                <span class="text-lg md:text-xl font-bold text-gray-400">VS</span>
+                                <div class="h-0.5 w-12 md:h-12 md:w-0.5 bg-gray-300 mx-2 md:my-2"></div>
                             </div>
-                            <div class="captured-pieces">
-                                {#if board}
-                                    {#each getCapturedPieces('white', board) as piece}
-                                        <span class="captured-piece white">{PIECE_SYMBOLS.white[piece]}</span>
-                                    {/each}
-                                {/if}
+
+                            <!-- Black Player Info -->
+                            <div class="flex flex-col items-center space-y-2 w-full md:w-auto min-w-[200px]">
+                                <div class="text-base md:text-lg font-semibold bg-black text-white shadow-md rounded-lg p-2 md:p-3 w-full md:w-auto">
+                                    <span class="flex items-center gap-2 justify-center md:justify-start">
+                                        <span class="text-xl md:text-2xl">♔</span>
+                                        <span>{blackPlayerName}</span>
+                                    </span>
+                                </div>
+                                <div class="captured-pieces">
+                                    {#if board}
+                                        {#each getCapturedPieces('white', board) as piece}
+                                            <span class="captured-piece white">{PIECE_SYMBOLS.white[piece]}</span>
+                                        {/each}
+                                    {/if}
+                                </div>
                             </div>
                         </div>
                     </div>
+                    
+                    <Chessboard 
+                        {matchId}
+                        {whitePlayerId}
+                        {blackPlayerId}
+                        on:error={handleMoveError}
+                        on:gameOver={handleGameOver}
+                        bind:board
+                    />
                 </div>
-                
-                <Chessboard 
-                    {matchId}
-                    {whitePlayerId}
-                    {blackPlayerId}
-                    on:error={handleMoveError}
-                    on:gameOver={handleGameOver}
-                    bind:board
-                />
-            </div>
-        {/if}
+            {/if}
+        </div>
     </div>
 </div>
