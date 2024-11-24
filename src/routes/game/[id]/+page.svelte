@@ -18,6 +18,9 @@
 
     async function loadMatchData() {
         try {
+            loading = true;
+            error = null;
+            
             const response = await fetch(`http://localhost/api/match/${matchId}`);
             if (!response.ok) {
                 const errorText = await response.text();
@@ -31,6 +34,14 @@
             whitePlayerName = matchData.white_player_name;
             blackPlayerName = matchData.black_player_name;
             gameEnded = matchData.status !== 'ongoing';
+            
+            // Reset the board state when loading new match data
+            board = null;
+            // Force a small delay to ensure the board resets
+            await new Promise(resolve => setTimeout(resolve, 0));
+            // Initialize new board
+            board = Array(8).fill(null).map(() => Array(8).fill(''));
+            
             loading = false;
         } catch (e) {
             console.error('LoadMatchData error:', e);
@@ -64,6 +75,9 @@
                 const basePath = process.env.NODE_ENV === 'production' ? '/chess-p2p' : '';
                 
                 try {
+                    // Reset the board state
+                    board = null;
+                    
                     // Navigate to the new match
                     await goto(`${basePath}/game/${result.match_id}`, {
                         replaceState: false,
