@@ -372,7 +372,7 @@
 
                 console.log('Sending payload:', payload); // Debug log
 
-                const response = await fetch(`http://localhost/frontend-final-project/api/match-end/${matchId}`, {
+                const response = await fetch(`http://localhos/api/match-end/${matchId}`, {
                     method: 'PUT',
                     headers: { 
                         'Content-Type': 'application/json',

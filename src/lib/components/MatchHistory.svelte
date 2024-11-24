@@ -7,7 +7,7 @@
     
     async function fetchMatches() {
         try {
-            const response = await fetch('http://localhost/frontend-final-project/api/matches', {
+            const response = await fetch('http://localhos/api/matches', {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
@@ -48,7 +48,7 @@
         }
         
         try {
-            const response = await fetch(`http://localhost/frontend-final-project/api/match/${matchId}`, {
+            const response = await fetch(`http://localhos/api/match/${matchId}`, {
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',

@@ -18,7 +18,7 @@
 
     async function loadMatchData() {
         try {
-            const response = await fetch(`http://localhost/frontend-final-project/api/match/${matchId}`);
+            const response = await fetch(`http://localhos/api/match/${matchId}`);
             if (!response.ok) throw new Error('Failed to load match data');
             
             const matchData = await response.json();
@@ -42,7 +42,7 @@
             error = null;
 
             // Create new match with swapped colors
-            const response = await fetch('http://localhost/frontend-final-project/api/match', {
+            const response = await fetch('http://localhos/api/match', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -71,7 +71,7 @@
     async function handleBack() {
         if (!gameEnded) {  // Only try to end the match if it's not already ended
             try {
-                const response = await fetch(`http://localhost/frontend-final-project/api/match-end/${matchId}`, {
+                const response = await fetch(`http://localhos/api/match-end/${matchId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
