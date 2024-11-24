@@ -55,8 +55,8 @@
             
             const result = await response.json();
             if (result.status && result.match_id) {
-                // Use base path from environment
-                const basePath = process.env.NODE_ENV === 'production' ? '/chess-p2p' : '';
+                // Use import.meta.env instead of process.env
+                const basePath = import.meta.env.PROD ? '/chess-p2p' : '';
                 // Navigate to the new match
                 await goto(`${basePath}/game/${result.match_id}`);
                 // Reload the page to ensure fresh state
@@ -90,8 +90,8 @@
             }
         }
 
-        // Always navigate back home with the correct base path
-        const basePath = process.env.NODE_ENV === 'production' ? '/chess-p2p' : '';
+        // Use import.meta.env instead of process.env
+        const basePath = import.meta.env.PROD ? '/chess-p2p' : '';
         await goto(`${basePath}/`);
     }
 
