@@ -18,15 +18,8 @@
 
     async function loadMatchData() {
         try {
-            loading = true;
-            error = null;
-            
             const response = await fetch(`http://localhost/api/match/${matchId}`);
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Load match error:', errorText);
-                throw new Error('Failed to load match data');
-            }
+            if (!response.ok) throw new Error('Failed to load match data');
             
             const matchData = await response.json();
             whitePlayerId = matchData.white_player_id;
@@ -34,17 +27,8 @@
             whitePlayerName = matchData.white_player_name;
             blackPlayerName = matchData.black_player_name;
             gameEnded = matchData.status !== 'ongoing';
-            
-            // Reset the board state when loading new match data
-            board = null;
-            // Force a small delay to ensure the board resets
-            await new Promise(resolve => setTimeout(resolve, 0));
-            // Initialize new board
-            board = Array(8).fill(null).map(() => Array(8).fill(''));
-            
             loading = false;
         } catch (e) {
-            console.error('LoadMatchData error:', e);
             error = e.message;
             loading = false;
         }
@@ -73,26 +57,10 @@
             if (result.status && result.match_id) {
                 // Use base path from environment
                 const basePath = process.env.NODE_ENV === 'production' ? '/chess-p2p' : '';
-                
-                try {
-                    // Reset the board state
-                    board = null;
-                    
-                    // Navigate to the new match
-                    await goto(`${basePath}/game/${result.match_id}`, {
-                        replaceState: false,
-                        invalidateAll: true
-                    });
-                    
-                    // Reset loading state after successful navigation
-                    rematchLoading = false;
-                    
-                    // Force a new data load
-                    await loadMatchData();
-                } catch (navigationError) {
-                    console.error('Navigation error:', navigationError);
-                    throw new Error('Failed to navigate to new game');
-                }
+                // Navigate to the new match
+                await goto(`${basePath}/game/${result.match_id}`);
+                // Reload the page to ensure fresh state
+                window.location.reload();
             } else {
                 throw new Error('Failed to start rematch');
             }
@@ -270,7 +238,7 @@
                     {/if}
                 </button>
             {:else}
-                <div class="w-[132px]"></div> <!-- Spacer -->
+                <div class="w-[132px]"></div> <!-- Adjusted spacer width to match button width -->
             {/if}
         </div>
         

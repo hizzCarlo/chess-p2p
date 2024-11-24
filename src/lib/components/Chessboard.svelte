@@ -20,39 +20,6 @@
     let gameEndReason: 'checkmate' | 'stalemate' | 'insufficient material' | 
                        'threefold repetition' | 'fifty-move rule' | null = null;
 
-    // Watch for matchId changes to reset the board
-    $: if (matchId) {
-        resetGame();
-    }
-
-    function resetGame() {
-        // Reset all game state
-        selectedSquare = null;
-        moveHistory = [];
-        currentTurn = 'white';
-        isGameOver = false;
-        winner = null;
-        possibleMoves = [];
-        gameEndReason = null;
-        
-        // Initialize new game state
-        gameState = {
-            board,
-            moveHistory: [],
-            currentTurn: 'white',
-            castlingRights: {
-                white: { kingSide: true, queenSide: true },
-                black: { kingSide: true, queenSide: true }
-            },
-            enPassantTarget: null,
-            lastMove: null,
-            promotedPawns: []
-        };
-
-        // Initialize new board
-        initializeBoard();
-    }
-
     // Initialize game state properly
     gameState = {
         board,
@@ -434,9 +401,10 @@
     }
 
     onMount(() => {
-        resetGame();
+        initializeBoard();
     });
 </script>
+
 <div class="flex gap-8 items-start chessboard-container">
     <div class="flex-1">
         <!-- Chessboard -->
