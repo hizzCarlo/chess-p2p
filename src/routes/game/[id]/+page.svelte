@@ -19,7 +19,11 @@
     async function loadMatchData() {
         try {
             const response = await fetch(`http://localhost/api/match/${matchId}`);
-            if (!response.ok) throw new Error('Failed to load match data');
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Load match error:', errorText);
+                throw new Error('Failed to load match data');
+            }
             
             const matchData = await response.json();
             whitePlayerId = matchData.white_player_id;
@@ -29,6 +33,7 @@
             gameEnded = matchData.status !== 'ongoing';
             loading = false;
         } catch (e) {
+            console.error('LoadMatchData error:', e);
             error = e.message;
             loading = false;
         }
@@ -57,11 +62,23 @@
             if (result.status && result.match_id) {
                 // Use base path from environment
                 const basePath = process.env.NODE_ENV === 'production' ? '/chess-p2p' : '';
-                // Navigate to the new match without reload
-                await goto(`${basePath}/game/${result.match_id}`, {
-                    replaceState: false,
-                    invalidateAll: true // This will force data refetch without reload
-                });
+                
+                try {
+                    // Navigate to the new match
+                    await goto(`${basePath}/game/${result.match_id}`, {
+                        replaceState: false,
+                        invalidateAll: true
+                    });
+                    
+                    // Reset loading state after successful navigation
+                    rematchLoading = false;
+                    
+                    // Force a new data load
+                    await loadMatchData();
+                } catch (navigationError) {
+                    console.error('Navigation error:', navigationError);
+                    throw new Error('Failed to navigate to new game');
+                }
             } else {
                 throw new Error('Failed to start rematch');
             }
@@ -239,7 +256,7 @@
                     {/if}
                 </button>
             {:else}
-                <div class="w-[132px]"></div> <!-- Adjusted spacer width to match button width -->
+                <div class="w-[132px]"></div> <!-- Spacer -->
             {/if}
         </div>
         
