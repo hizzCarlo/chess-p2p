@@ -40,8 +40,12 @@
         try {
             rematchLoading = true;
             error = null;
+            
+            // First navigate back to root
+            const basePath = import.meta.env.PROD ? '/chess-p2p' : '';
+            await goto(`${basePath}/`);
 
-            // Create new match with swapped colors
+            // Then create new match with swapped colors
             const response = await fetch('http://localhost/api/match', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -55,12 +59,8 @@
             
             const result = await response.json();
             if (result.status && result.match_id) {
-                // Use import.meta.env instead of process.env
-                const basePath = import.meta.env.PROD ? '/chess-p2p' : '';
                 // Navigate to the new match
                 await goto(`${basePath}/game/${result.match_id}`);
-                // Reload the page to ensure fresh state
-                window.location.reload();
             } else {
                 throw new Error('Failed to start rematch');
             }
