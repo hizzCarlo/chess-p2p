@@ -57,10 +57,11 @@
             if (result.status && result.match_id) {
                 // Use base path from environment
                 const basePath = process.env.NODE_ENV === 'production' ? '/chess-p2p' : '';
-                // Navigate to the new match
-                await goto(`${basePath}/game/${result.match_id}`);
-                // Reload the page to ensure fresh state
-                
+                // Navigate to the new match without reload
+                await goto(`${basePath}/game/${result.match_id}`, {
+                    replaceState: false,
+                    invalidateAll: true // This will force data refetch without reload
+                });
             } else {
                 throw new Error('Failed to start rematch');
             }
