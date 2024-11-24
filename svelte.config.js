@@ -12,9 +12,9 @@ const config = {
 			precompress: false,
 			strict: true
 		}),
-		alias: {
-			$lib: './src/lib'
-		}
+		paths: {
+            base: process.env.NODE_ENV === 'production' ? '/chess-p2p' : ''
+        }
 	},
 };
 
