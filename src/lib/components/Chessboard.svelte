@@ -405,34 +405,34 @@
     });
 </script>
 
-<div class="flex gap-8 items-start chessboard-container">
+<div class="flex flex-col md:flex-row gap-8 items-start chessboard-container">
     <div class="flex-1">
         <!-- Chessboard -->
-        <div class="w-[680px] mx-auto">
+        <div class="max-w-[680px] w-full mx-auto">
             <!-- Files (a-h) labels top -->
-            <div class="grid grid-cols-[40px_repeat(8,75px)] mb-1">
+            <div class="grid grid-cols-[8%_repeat(8,1fr)] mb-1">
                 <div></div>
                 {#each 'abcdefgh' as file}
-                    <div class="text-center font-semibold">{file}</div>
+                    <div class="text-center font-semibold text-sm md:text-base">{file}</div>
                 {/each}
             </div>
             
             <div class="flex">
                 <!-- Ranks (1-8) labels left -->
-                <div class="flex flex-col justify-around w-[40px] mr-1">
+                <div class="flex flex-col justify-around w-[8%]">
                     {#each '87654321' as rank}
-                        <div class="h-[75px] flex items-center justify-center font-semibold">
+                        <div class="aspect-square flex items-center justify-center font-semibold text-sm md:text-base">
                             {rank}
                         </div>
                     {/each}
                 </div>
 
                 <!-- Board -->
-                <div class="grid grid-cols-8 border border-gray-400">
+                <div class="grid grid-cols-8 border border-gray-400 flex-1">
                     {#each board as row, i}
                         {#each row as square, j}
                             <div
-                                class="w-[75px] h-[75px] flex items-center justify-center text-4xl cursor-pointer relative
+                                class="aspect-square flex items-center justify-center cursor-pointer relative
                                     {((i + j) % 2 === 0) ? 'bg-[#116223]' : 'bg-[#d3d2b7]'}
                                     {selectedSquare?.row === i && selectedSquare?.col === j ? 'selected-square' : ''}"
                                 on:click={() => handleSquareClick(i, j)}
@@ -442,25 +442,27 @@
                                     <div class="absolute inset-0 bg-blue-400 bg-opacity-40"></div>
                                 {/if}
 
-                                <!-- Chess piece -->
+                                <!-- Chess piece with updated sizing -->
                                 {#if square}
-                                    <div class="chess-piece {getPieceFromNotation(square)?.color || 'white'}-piece relative z-10">
-                                        {PIECE_SYMBOLS[getPieceFromNotation(square)?.color || 'white'][getPieceFromNotation(square)?.type || 'pawn']}
+                                    <div class="chess-piece-container">
+                                        <div class="chess-piece {getPieceFromNotation(square)?.color || 'white'}-piece">
+                                            {PIECE_SYMBOLS[getPieceFromNotation(square)?.color || 'white'][getPieceFromNotation(square)?.type || 'pawn']}
+                                        </div>
                                     </div>
                                 {/if}
                                 
-                                <!-- Possible move indicators -->
+                                <!-- Possible move indicators with responsive sizing -->
                                 {#if possibleMoves.some(move => move.row === i && move.col === j)}
                                     {#if square}
                                         <!-- Capture opportunity indicator -->
                                         <div class="absolute inset-0 capture-indicator">
-                                            <div class="absolute inset-2 border-2 border-red-500 rounded-full opacity-75"></div>
+                                            <div class="absolute inset-[10%] border-2 border-red-500 rounded-full opacity-75"></div>
                                         </div>
                                     {:else}
                                         <!-- Regular move indicator -->
                                         <div class="absolute inset-0 flex items-center justify-center">
-                                            <div class="w-3 h-3 rounded-full bg-blue-400 bg-opacity-70 
-                                                     hover:w-4 hover:h-4 transition-all duration-200"></div>
+                                            <div class="w-[15%] h-[15%] rounded-full bg-blue-400 bg-opacity-70 
+                                                     hover:w-[20%] hover:h-[20%] transition-all duration-200"></div>
                                         </div>
                                     {/if}
                                 {/if}
@@ -470,9 +472,9 @@
                 </div>
 
                 <!-- Ranks (1-8) labels right -->
-                <div class="flex flex-col justify-around w-[40px] ml-1">
+                <div class="flex flex-col justify-around w-[8%]">
                     {#each '87654321' as rank}
-                        <div class="h-[75px] flex items-center justify-center font-semibold">
+                        <div class="aspect-square flex items-center justify-center font-semibold text-sm md:text-base">
                             {rank}
                         </div>
                     {/each}
@@ -480,10 +482,10 @@
             </div>
 
             <!-- Files (a-h) labels bottom -->
-            <div class="grid grid-cols-[40px_repeat(8,75px)] mt-1">
+            <div class="grid grid-cols-[8%_repeat(8,1fr)] mt-1">
                 <div></div>
                 {#each 'abcdefgh' as file}
-                    <div class="text-center font-semibold">{file}</div>
+                    <div class="text-center font-semibold text-sm md:text-base">{file}</div>
                 {/each}
             </div>
         </div>
@@ -507,13 +509,28 @@
         </div>
     </div>
 
-    <!-- Move History -->
-    <div class="w-64 bg-white p-4 rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">Move History</h2>
+    <!-- Move History - Modified for responsive layout -->
+    <div class="w-full md:w-64 bg-white p-4 rounded-lg shadow mt-4 md:mt-0">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold">Move History</h2>
+            <!-- Optional: Add a collapse/expand button for mobile -->
+            <button 
+                class="md:hidden text-gray-500 hover:text-gray-700"
+                on:click={() => {
+                    const history = document.querySelector('.move-history');
+                    history?.classList.toggle('h-0');
+                    history?.classList.toggle('h-[200px]');
+                }}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+        </div>
         {#if moveHistory.length === 0}
             <p class="text-gray-500">No moves yet</p>
         {:else}
-            <div class="space-y-2 move-history">
+            <div class="space-y-2 move-history h-[200px] transition-all duration-300 ease-in-out">
                 {#each moveHistory as move, i}
                     <div class="flex items-center">
                         <span class="w-8 text-gray-500">{Math.floor(i/2 + 1)}.</span>
@@ -527,139 +544,199 @@
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Chess&display=swap');
-  /* or download and use a specialized chess font like "Chess7" */
+
+  /* Add container for better piece positioning */
+  .chess-piece-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+  }
 
   .chess-piece {
-    font-family: 'Noto Chess', sans-serif;
-    font-size: 2.5rem;
-    /* Ensure crisp rendering */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+      font-family: 'Noto Chess', sans-serif;
+      /* Adjust font size to match tile size */
+      font-size: clamp(2rem, min(4vw, 4vh), 3.5rem);
+      line-height: 1;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Remove transform to prevent overflow */
+      transition: transform 0.2s ease-in-out;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      user-select: none;
+      /* Prevent text selection */
+      pointer-events: none;
+      /* Allow click events to pass through to the container */
   }
 
   .white-piece {
-    color: #fff;
-    text-shadow: 0 0 5px #000;
+      color: #fff;
+      text-shadow: 
+          0 0 2px #000,
+          0 0 3px #000,
+          0 0 4px #000;
   }
 
   .black-piece {
-    color: #000;
+      color: #000;
+      text-shadow: 
+          0 0 2px #555,
+          0 0 3px #555;
   }
 
-  /* Add smooth transitions for the indicators */
+  /* Update hover effect to be on the container instead */
+  .chess-piece-container:hover .chess-piece {
+      transform: scale(1.1);
+  }
+
+  /* Ensure squares are perfectly square */
+  .aspect-square {
+      aspect-ratio: 1/1;
+      overflow: hidden;
+  }
+
+  /* Rest of your styles... */
+
   .absolute {
-    transition: all 0.2s ease-in-out;
+      transition: all 0.2s ease-in-out;
   }
 
   .selected-square {
-    position: relative;
-    overflow: hidden;
+      position: relative;
+      overflow: hidden;
   }
 
   .selected-square::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border: 3px solid #60a5fa;
-    animation: pulse 2s infinite;
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 3px solid #60a5fa;
+      animation: pulse 2s infinite;
   }
 
   .capture-indicator {
-    animation: rotate 4s linear infinite;
+      animation: rotate 4s linear infinite;
   }
 
   @keyframes pulse {
-    0% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.6;
-      transform: scale(1.05);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
+      0% {
+          opacity: 1;
+          transform: scale(1);
+      }
+      50% {
+          opacity: 0.6;
+          transform: scale(1.05);
+      }
+      100% {
+          opacity: 1;
+          transform: scale(1);
+      }
   }
 
   @keyframes rotate {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
+      from {
+          transform: rotate(0deg);
+      }
+      to {
+          transform: rotate(360deg);
+      }
   }
 
   /* Make pieces stand out more */
   .chess-piece {
-    transform: scale(1.1);
-    transition: transform 0.2s ease-in-out;
+      transform: scale(1.1);
+      transition: transform 0.2s ease-in-out;
   }
 
   .chess-piece:hover {
-    transform: scale(1.2);
+      transform: scale(1.2);
   }
 
   /* Improve piece shadows */
   .white-piece {
-    color: #fff;
-    text-shadow: 
-        0 0 3px #000,
-        0 0 5px #000,
-        0 0 7px #000;
+      color: #fff;
+      text-shadow: 
+          0 0 3px #000,
+          0 0 5px #000,
+          0 0 7px #000;
   }
 
   .black-piece {
-    color: #000;
-    text-shadow: 
-        0 0 3px #555,
-        0 0 5px #555;
+      color: #000;
+      text-shadow: 
+          0 0 3px #555,
+          0 0 5px #555;
   }
 
   /* Add any additional styling you need */
   .move-history {
-    max-height: 400px;
-    overflow-y: auto;
-    font-family: monospace;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      transition: height 0.3s ease-in-out;
+  }
+
+  /* Adjust the container on mobile */
+  @media (max-width: 768px) {
+      .chessboard-container {
+          padding: 0 1rem;
+      }
+
+      .move-history {
+          max-height: 200px;
+          border-top: 1px solid #e5e7eb;
+      }
+  }
+
+  /* Make the move history more compact on mobile */
+  @media (max-width: 768px) {
+      .move-history div {
+          padding: 4px 2px;
+          font-size: 0.875rem;
+      }
   }
 
   /* Add smooth scrolling for move history */
   .move-history {
-    scroll-behavior: smooth;
+      scroll-behavior: smooth;
   }
 
   /* Style for move entries */
   .move-history div {
-    padding: 2px 4px;
+      padding: 2px 4px;
   }
 
   .move-history div:hover {
-    background-color: #f3f4f6;
-    border-radius: 4px;
+      background-color: #f3f4f6;
+      border-radius: 4px;
   }
 
   /* Add these new styles */
   :global(.promotion-modal) {
-    z-index: 9999 !important;
+      z-index: 9999 !important;
   }
 
   .chessboard-container {
-    position: relative;
-    z-index: 1;
+      position: relative;
+      z-index: 1;
   }
 
   /* Make pieces stand out more but stay below modal */
   .chess-piece {
-    z-index: 2;
-    transform: scale(1.1);
-    transition: transform 0.2s ease-in-out;
+      z-index: 2;
+      transform: scale(1.1);
+      transition: transform 0.2s ease-in-out;
   }
 
   /* Ensure move indicators stay below modal */
   .capture-indicator,
   .selected-square::before {
-    z-index: 3;
+      z-index: 3;
   }
 </style>

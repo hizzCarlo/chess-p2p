@@ -166,18 +166,18 @@
     @import url('https://fonts.googleapis.com/css2?family=Noto+Chess&display=swap');
 
     .captured-pieces {
-        min-height: 2.5rem;
+        min-height: 2rem;
         display: flex;
-        gap: 0.5rem;
+        gap: clamp(0.25rem, 1vw, 0.5rem);
         align-items: center;
         flex-wrap: wrap;
         justify-content: center;
-        padding: 0.5rem;
+        padding: clamp(0.25rem, 1vw, 0.5rem);
     }
 
     .captured-piece {
         font-family: 'Noto Chess', sans-serif;
-        font-size: 2rem;
+        font-size: clamp(1rem, 3vw, 2rem);
         transform: scale(1.1);
         transition: transform 0.2s ease-in-out;
         -webkit-font-smoothing: antialiased;
@@ -187,26 +187,34 @@
     .captured-piece.white {
         color: #fff;
         text-shadow: 
-            0 0 3px #000,
-            0 0 5px #000,
-            0 0 7px #000;
+            0 0 2px #000,
+            0 0 4px #000,
+            0 0 6px #000;
     }
 
     .captured-piece.black {
         color: #000;
         text-shadow: 
-            0 0 3px #555,
-            0 0 5px #555;
+            0 0 2px #555,
+            0 0 4px #555;
     }
 
     .captured-piece:hover {
-        transform: scale(1.2);
+        transform: scale(1.15);
         opacity: 0.8;
+    }
+
+    /* Add responsive container adjustments */
+    @media (max-width: 768px) {
+        :global(.container) {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
     }
 </style>
 
-<div class="min-h-screen bg-gray-100 py-8">
-    <div class="container mx-auto px-4">
+<div class="min-h-screen bg-gray-100 py-4 md:py-8">
+    <div class="container mx-auto px-2 md:px-4">
         <div class="flex justify-between items-center mb-8">
             <button 
                 on:click={handleBack}
@@ -257,14 +265,14 @@
                 <span class="text-gray-600">Loading game data...</span>
             </div>
         {:else}
-            <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="bg-white rounded-lg shadow-lg p-2 md:p-6">
                 <div class="mb-4 text-center">
-                    <div class="flex justify-between items-center px-8">
+                    <div class="flex flex-col md:flex-row justify-between items-center px-2 md:px-8 gap-4">
                         <!-- White Player Info -->
-                        <div class="flex flex-col items-center space-y-2">
-                            <div class="text-lg font-semibold bg-white shadow-md rounded-lg p-3 border border-gray-200">
-                                <span class="flex items-center gap-2">
-                                    <span class="text-2xl">♔</span>
+                        <div class="flex flex-col items-center space-y-2 w-full md:w-auto">
+                            <div class="text-base md:text-lg font-semibold bg-white shadow-md rounded-lg p-2 md:p-3 border border-gray-200 w-full md:w-auto">
+                                <span class="flex items-center gap-2 justify-center md:justify-start">
+                                    <span class="text-xl md:text-2xl">♔</span>
                                     <span>{whitePlayerName}</span>
                                 </span>
                             </div>
@@ -278,16 +286,16 @@
                         </div>
 
                         <!-- VS Divider -->
-                        <div class="flex flex-col items-center">
-                            <span class="text-xl font-bold text-gray-400">VS</span>
-                            <div class="h-12 w-0.5 bg-gray-300 my-2"></div>
+                        <div class="flex md:flex-col items-center">
+                            <span class="text-lg md:text-xl font-bold text-gray-400">VS</span>
+                            <div class="h-0.5 w-12 md:h-12 md:w-0.5 bg-gray-300 mx-2 md:my-2"></div>
                         </div>
 
                         <!-- Black Player Info -->
-                        <div class="flex flex-col items-center space-y-2">
-                            <div class="text-lg font-semibold bg-black text-white shadow-md rounded-lg p-3">
-                                <span class="flex items-center gap-2">
-                                    <span class="text-2xl">♔</span>
+                        <div class="flex flex-col items-center space-y-2 w-full md:w-auto">
+                            <div class="text-base md:text-lg font-semibold bg-black text-white shadow-md rounded-lg p-2 md:p-3 w-full md:w-auto">
+                                <span class="flex items-center gap-2 justify-center md:justify-start">
+                                    <span class="text-xl md:text-2xl">♔</span>
                                     <span>{blackPlayerName}</span>
                                 </span>
                             </div>
