@@ -19,7 +19,7 @@
     let possibleMoves: Position[] = [];
     let gameEndReason: 'checkmate' | 'stalemate' | 'insufficient material' | 
                        'threefold repetition' | 'fifty-move rule' | null = null;
-
+    let isMoveHistoryCollapsed = false;
     // Initialize game state properly
     gameState = {
         board,
