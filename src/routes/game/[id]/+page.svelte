@@ -60,7 +60,7 @@
                 // Navigate to the new match
                 await goto(`${basePath}/game/${result.match_id}`);
                 // Reload the page to ensure fresh state
-                window.location.reload();
+                
             } else {
                 throw new Error('Failed to start rematch');
             }
