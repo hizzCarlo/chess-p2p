@@ -403,6 +403,23 @@
     onMount(() => {
         initializeBoard();
     });
+    // Initialize kingInCheck array
+    let kingInCheck = Array(8).fill(null).map(() => Array(8).fill(false));
+
+    // Update the reactive statement
+    $: {
+        if (board) {
+            kingInCheck = board.map((row, i) => 
+                row.map((square, j) => {
+                    const piece = getPieceFromNotation(square);
+                    if (piece?.type === 'king') {
+                        return isKingInCheckPosition(board, {row: i, col: j}, piece.color, gameState);
+                    }
+                    return false;
+                })
+            );
+        }
+    }
 </script>
 
 <div class="flex flex-col md:flex-row gap-8 items-center md:items-start chessboard-container {isMoveHistoryCollapsed ? 'history-collapsed' : ''}">
