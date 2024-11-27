@@ -582,7 +582,7 @@
 
   .chess-piece {
       font-family: 'Noto Chess', sans-serif;
-      font-size: clamp(2rem, 3.5vw, 3.5rem); /* Default size */
+      font-size: clamp(2rem, 3.2vw, 3.5rem); /* Default size */
       line-height: 1;
       height: 100%;
       display: flex;

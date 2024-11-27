@@ -91,9 +91,8 @@
             }
         }
 
-        // Use import.meta.env instead of process.env
         const basePath = import.meta.env.PROD ? '/chess-p2p' : '';
-        await goto(`${basePath}/`);
+        await goto(`${basePath}/`, { invalidateAll: true });
     }
 
     function handleGameOver(event: CustomEvent) {
