@@ -1,6 +1,5 @@
 <script>
     import { onMount } from 'svelte';
-    import { afterNavigate } from '$app/navigation';
     import Chessboard from '$lib/components/Chessboard.svelte';
     import PlayerForm from '$lib/components/PlayerForm.svelte';
     import MatchHistory from '$lib/components/MatchHistory.svelte';
@@ -10,20 +9,11 @@
     let currentMatch = null;
     let players = [];
     let leaderboardComponent;
-    let matchHistoryComponent;
     
     onMount(async () => {
-        await fetchPlayers();
-    });
-    // reload root page
-    afterNavigate(() => {
-        refreshData();
-    });
-    
-    async function fetchPlayers() {
         const response = await fetch('https://www.formalytics.me/api-chess/players');
         players = await response.json();
-    }
+    });
     
     async function handleMatchStart(event) {
         const { white, black } = event.detail;
@@ -52,22 +42,10 @@
         }
     }
     function handlePlayerAdded() {
-        // Refresh both the leaderboard and players list when a new player is added
+        // Refresh the leaderboard when a new player is added
         if (leaderboardComponent) {
             leaderboardComponent.fetchLeaderboard();
         }
-        fetchPlayers();
-    }
-    function refreshData() {
-        // Refresh all components
-        if (leaderboardComponent) {
-            leaderboardComponent.fetchLeaderboard();
-        }
-        if (matchHistoryComponent) {
-            matchHistoryComponent.fetchMatches();
-        }
-        fetchPlayers();
-        currentMatch = null;
     }
 </script>
 
@@ -94,11 +72,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
             {#if !currentMatch}
-                <PlayerForm 
-                    {players} 
-                    onPlayerAdded={handlePlayerAdded}
-                    on:refresh={refreshData}
-                />
+                <PlayerForm {players} onPlayerAdded={handlePlayerAdded} />
             {:else}
                 <Chessboard matchId={currentMatch.match_id} />
             {/if}
@@ -108,7 +82,7 @@
             <Leaderboard bind:this={leaderboardComponent} />
         </div>
     </div>
-    <MatchHistory bind:this={matchHistoryComponent} />
+    <MatchHistory />
 </main>
 
 <style>
