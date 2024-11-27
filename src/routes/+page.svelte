@@ -15,7 +15,7 @@
     onMount(async () => {
         await fetchPlayers();
     });
-    
+    // reload root page
     afterNavigate(() => {
         refreshData();
     });
