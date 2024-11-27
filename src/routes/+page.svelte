@@ -9,11 +9,16 @@
     let currentMatch = null;
     let players = [];
     let leaderboardComponent;
+    let matchHistoryComponent;
     
     onMount(async () => {
+        await fetchPlayers();
+    });
+    
+    async function fetchPlayers() {
         const response = await fetch('https://www.formalytics.me/api-chess/players');
         players = await response.json();
-    });
+    }
     
     async function handleMatchStart(event) {
         const { white, black } = event.detail;
@@ -42,10 +47,21 @@
         }
     }
     function handlePlayerAdded() {
-        // Refresh the leaderboard when a new player is added
+        // Refresh both the leaderboard and players list when a new player is added
         if (leaderboardComponent) {
             leaderboardComponent.fetchLeaderboard();
         }
+        fetchPlayers();
+    }
+    function refreshData() {
+        // Refresh all components
+        if (leaderboardComponent) {
+            leaderboardComponent.fetchLeaderboard();
+        }
+        if (matchHistoryComponent) {
+            matchHistoryComponent.fetchMatches();
+        }
+        fetchPlayers();
     }
 </script>
 
@@ -72,7 +88,11 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
             {#if !currentMatch}
-                <PlayerForm {players} onPlayerAdded={handlePlayerAdded} />
+                <PlayerForm 
+                    {players} 
+                    onPlayerAdded={handlePlayerAdded}
+                    on:refresh={refreshData}
+                />
             {:else}
                 <Chessboard matchId={currentMatch.match_id} />
             {/if}
@@ -82,7 +102,7 @@
             <Leaderboard bind:this={leaderboardComponent} />
         </div>
     </div>
-    <MatchHistory />
+    <MatchHistory bind:this={matchHistoryComponent} />
 </main>
 
 <style>
