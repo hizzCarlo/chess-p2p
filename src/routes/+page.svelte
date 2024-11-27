@@ -1,5 +1,6 @@
 <script>
     import { onMount } from 'svelte';
+    import { afterNavigate } from '$app/navigation';
     import Chessboard from '$lib/components/Chessboard.svelte';
     import PlayerForm from '$lib/components/PlayerForm.svelte';
     import MatchHistory from '$lib/components/MatchHistory.svelte';
@@ -13,6 +14,10 @@
     
     onMount(async () => {
         await fetchPlayers();
+    });
+    
+    afterNavigate(() => {
+        refreshData();
     });
     
     async function fetchPlayers() {
@@ -62,6 +67,7 @@
             matchHistoryComponent.fetchMatches();
         }
         fetchPlayers();
+        currentMatch = null;
     }
 </script>
 
