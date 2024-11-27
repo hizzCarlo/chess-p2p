@@ -4,6 +4,7 @@
     import Chessboard from '$lib/components/Chessboard.svelte';
     import { onMount } from 'svelte';
     import { PIECE_SYMBOLS } from '$lib/chess';
+    import '../../../lib/styles/animated-bg.css';
     
     const matchId = $page.params.id;
     let whitePlayerId: string;
@@ -171,6 +172,17 @@
         max-width: 1200px;
         margin: 0 auto;
         padding: clamp(0.5rem, 2vw, 2rem);
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Make content stand out against animated background */
+    :global(.bg-white) {
+        background-color: rgba(255, 255, 255, 0.95);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        margin: 1rem 0;
     }
 
     /* Improved player info cards */
@@ -191,20 +203,25 @@
 
     /* Enhanced captured pieces display */
     .captured-pieces {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(1.5rem, 1fr));
+        display: flex;
+        flex-wrap: wrap;
         gap: clamp(0.125rem, 0.5vw, 0.25rem);
         padding: clamp(0.25rem, 1vw, 0.5rem);
         min-height: 2.5rem;
         align-items: center;
-        justify-items: center;
+        justify-content: flex-start;
+        background: rgba(255, 255, 255, 0.1);
+        
+        border-radius: 8px;
+        margin: 0.5rem 0;
     }
 
     .captured-piece {
         font-family: 'Noto Chess', sans-serif;
-        font-size: clamp(1rem, 3vmin, 1.5rem);
+        font-size: clamp(1.2rem, 3vmin, 1.8rem);
         line-height: 1;
         transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
     }
 
     /* Improved piece shadows */
@@ -242,11 +259,18 @@
         }
     }
 
-    /* Rest of your existing styles... */
+    
 </style>
 
+<div class="area">
+    <ul class="circles">
+        <li></li><li></li><li></li><li></li><li></li>
+        <li></li><li></li><li></li><li></li><li></li>
+    </ul>
+</div>
+
 <div class="game-container">
-    <div class="min-h-screen bg-gray-100 py-4 md:py-8">
+    <div class="min-h-screen py-4 md:py-8">
         <div class="container mx-auto px-2 md:px-4 max-w-[1200px]">
             <div class="flex justify-between items-center mb-8">
                 <button 

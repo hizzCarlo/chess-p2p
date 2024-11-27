@@ -419,15 +419,15 @@ export function handlePawnPromotion(
             
         // Create modal dialog for piece selection
         const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.className = 'promotion-modal fixed inset-0 flex items-center justify-center z-50';
         
         const content = document.createElement('div');
-        content.className = 'bg-white p-4 rounded-lg shadow-xl z-50';
+        content.className = 'bg-white p-4 rounded-lg shadow-xl max-w-xs mx-auto';
         content.innerHTML = `
-            <h3 class="text-lg mb-4 font-bold">Choose promotion piece:</h3>
-            <div class="grid grid-cols-4 gap-4">
+            <h3 class="text-lg mb-4 font-bold text-center">Choose promotion piece:</h3>
+            <div class="flex justify-around gap-4">
                 ${promotionPieces.map(piece => `
-                    <button class="text-3xl p-2 hover:bg-gray-100 rounded transition-colors duration-200">
+                    <button class="promotion-piece text-4xl p-2 hover:bg-gray-100 rounded transition-colors duration-200">
                         ${PIECE_SYMBOLS[color][getPieceFromNotation(piece)!.type]}
                     </button>
                 `).join('')}
@@ -437,17 +437,34 @@ export function handlePawnPromotion(
         modal.appendChild(content);
         document.body.appendChild(modal);
         
-        // Ensure modal is on top of everything
-        modal.style.zIndex = '9999';
-        content.style.zIndex = '10000';
+        // Add styles for the modal
+        const style = document.createElement('style');
+        style.textContent = `
+            .promotion-modal {
+                background: rgba(0, 0, 0, 0.5);
+            }
+            .promotion-modal > div {
+                width: auto;
+                min-width: 200px;
+                max-width: 300px;
+            }
+            .promotion-piece {
+                width: 60px;
+                height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        `;
+        document.head.appendChild(style);
         
         // Handle piece selection
         const buttons = content.querySelectorAll('button');
         buttons.forEach((button, index) => {
             button.addEventListener('click', () => {
-                const selectedPiece = promotionPieces[index];
                 document.body.removeChild(modal);
-                resolve(selectedPiece);
+                document.head.removeChild(style);
+                resolve(promotionPieces[index]);
             });
         });
     });

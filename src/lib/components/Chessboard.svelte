@@ -405,25 +405,25 @@
     });
 </script>
 
-<div class="flex flex-col md:flex-row gap-8 items-start chessboard-container {isMoveHistoryCollapsed ? 'history-collapsed' : ''}">
-    <div class="flex-1 transition-all duration-300 ease-in-out">
+<div class="flex flex-col md:flex-row gap-8 items-center md:items-start chessboard-container {isMoveHistoryCollapsed ? 'history-collapsed' : ''}">
+    <div class="flex-1 transition-all duration-300 ease-in-out max-w-full md:max-w-none">
         <!-- Chessboard -->
-        <div class="w-full mx-auto transition-all duration-300 ease-in-out" 
-             class:max-w-[calc(100vh-200px)]={!isMoveHistoryCollapsed} 
-             class:max-w-[calc(100vh-100px)]={isMoveHistoryCollapsed}>
+        <div class="w-full mx-auto transition-all duration-300 ease-in-out max-w-full" 
+             style="aspect-ratio: 1;">
             <!-- Files (a-h) labels top -->
-            <div class="grid grid-cols-[8%_repeat(8,1fr)] mb-1">
+            <div class="grid-coordinates mb-1">
                 <div></div>
                 {#each 'abcdefgh' as file}
                     <div class="text-center font-semibold text-sm md:text-base">{file}</div>
                 {/each}
+                <div></div>
             </div>
             
             <div class="flex">
                 <!-- Ranks (1-8) labels left -->
-                <div class="flex flex-col justify-around w-[8%]">
+                <div class="w-8 flex flex-col justify-around">
                     {#each '87654321' as rank}
-                        <div class="aspect-square flex items-center justify-center font-semibold text-sm md:text-base">
+                        <div class="h-full flex items-center justify-center font-semibold text-sm md:text-base">
                             {rank}
                         </div>
                     {/each}
@@ -444,10 +444,11 @@
                                     <div class="absolute inset-0 bg-blue-400 bg-opacity-40"></div>
                                 {/if}
 
-                                <!-- Chess piece with updated sizing -->
+                                <!-- Chess piece with check effect -->
                                 {#if square}
                                     <div class="chess-piece-container">
-                                        <div class="chess-piece {getPieceFromNotation(square)?.color || 'white'}-piece">
+                                        <div class="chess-piece {getPieceFromNotation(square)?.color || 'white'}-piece
+                                                  {kingInCheck[i][j] ? 'king-in-check' : ''}">
                                             {PIECE_SYMBOLS[getPieceFromNotation(square)?.color || 'white'][getPieceFromNotation(square)?.type || 'pawn']}
                                         </div>
                                     </div>
@@ -474,9 +475,9 @@
                 </div>
 
                 <!-- Ranks (1-8) labels right -->
-                <div class="flex flex-col justify-around w-[8%]">
+                <div class="w-8 flex flex-col justify-around">
                     {#each '87654321' as rank}
-                        <div class="aspect-square flex items-center justify-center font-semibold text-sm md:text-base">
+                        <div class="h-full flex items-center justify-center font-semibold text-sm md:text-base">
                             {rank}
                         </div>
                     {/each}
@@ -484,15 +485,38 @@
             </div>
 
             <!-- Files (a-h) labels bottom -->
-            <div class="grid grid-cols-[8%_repeat(8,1fr)] mt-1">
+            <div class="grid-coordinates mt-1">
                 <div></div>
                 {#each 'abcdefgh' as file}
                     <div class="text-center font-semibold text-sm md:text-base">{file}</div>
                 {/each}
+                <div></div>
             </div>
         </div>
 
-        <!-- Game Status -->
+       
+    </div>
+
+    <!-- Move History with Turn Indicator at Top -->
+    <div class="w-full md:w-64 lg:w-80 bg-white p-4 rounded-lg shadow mt-4 md:mt-0 transition-all duration-300 flex-shrink-0">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold">Move History</h2>
+            <button 
+                class="text-gray-500 hover:text-gray-700 hidden"
+                on:click={() => {
+                    isMoveHistoryCollapsed = !isMoveHistoryCollapsed;
+                    const history = document.querySelector('.move-history');
+                    history?.classList.toggle('h-0');
+                    history?.classList.toggle('h-[200px]');
+                }}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform duration-300 {isMoveHistoryCollapsed ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Turn Indicator -->
         <div class="mt-8 text-center">
             {#if isGameOver}
                 <div class="text-2xl font-bold text-red-600">
@@ -509,30 +533,11 @@
                 </div>
             {/if}
         </div>
-    </div>
 
-    <!-- Move History - Modified to be more compact -->
-    <div class="w-full md:w-64 lg:w-80 bg-white p-4 rounded-lg shadow mt-4 md:mt-0 transition-all duration-300 flex-shrink-0">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold">Move History</h2>
-            <button 
-                class="text-gray-500 hover:text-gray-700"
-                on:click={() => {
-                    isMoveHistoryCollapsed = !isMoveHistoryCollapsed;
-                    const history = document.querySelector('.move-history');
-                    history?.classList.toggle('h-0');
-                    history?.classList.toggle('h-[200px]');
-                }}
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform duration-300 {isMoveHistoryCollapsed ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-            </button>
-        </div>
         {#if moveHistory.length === 0}
             <p class="text-gray-500">No moves yet</p>
         {:else}
-            <div class="space-y-2 move-history h-[200px] transition-all duration-300 ease-in-out">
+            <div class="space-y-2 move-history h-[200px] transition-all duration-300 ease-in-out overflow-y-auto">
                 {#each moveHistory as move, i}
                     <div class="flex items-center">
                         <span class="w-8 text-gray-500">{Math.floor(i/2 + 1)}.</span>
@@ -560,21 +565,31 @@
 
   .chess-piece {
       font-family: 'Noto Chess', sans-serif;
-      /* Adjust font size to match tile size */
-      font-size: clamp(2rem, 5vmin, 4rem);
+      font-size: clamp(2rem, 3.5vw, 3.5rem); /* Default size */
       line-height: 1;
       height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      /* Remove transform to prevent overflow */
       transition: transform 0.2s ease-in-out;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       user-select: none;
-      /* Prevent text selection */
       pointer-events: none;
-      /* Allow click events to pass through to the container */
+  }
+
+  /* Add specific media query for the target screen size */
+  @media (min-width: 800px) and (max-width: 1000px) {
+      .chess-piece {
+          font-size: clamp(1.8rem, 3vw, 2.8rem); /* Adjusted size for medium screens */
+      }
+  }
+
+  /* Keep existing mobile styles */
+  @media (max-width: 768px) {
+      .chess-piece {
+          font-size: clamp(1.5rem, 5vmin, 3rem);
+      }
   }
 
   .white-piece {
@@ -688,12 +703,27 @@
   @media (max-width: 768px) {
       .chessboard-container {
           padding: 0.5rem;
-          
+          width: 100%;
       }
 
       .move-history {
           max-height: 200px;
           border-top: 1px solid #e5e7eb;
+          opacity: 1 !important; /* Force visibility */
+          height: auto !important; /* Prevent collapse */
+          pointer-events: auto !important; /* Ensure interaction */
+      }
+
+      /* Keep the board centered */
+      .flex-1 {
+          width: 100%;
+          max-width: min(100vw - 2rem, 100vh - 2rem);
+          margin: 0 auto;
+      }
+
+      /* Ensure the move history doesn't affect board centering */
+      .history-collapsed .flex-1 {
+          margin: 0 auto;
       }
   }
 
@@ -806,6 +836,141 @@
 
       .chess-piece {
           font-size: clamp(1.8rem, 8vmin, 3.5rem);
+      }
+  }
+    /* Improve responsive design */
+    @media (max-width: 768px) {
+      .chessboard-container {
+          padding: 0.5rem;
+      }
+
+      .chess-piece {
+          font-size: clamp(1.5rem, 8vmin, 3rem);
+      }
+  }
+
+  /* Add glass effect to the board */
+  .grid {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      border-radius: 8px;
+      overflow: hidden;
+  }
+
+  /* Improve square colors */
+  :global([class*="bg-[#116223]"]) {
+      background-color: rgba(17, 98, 35, 0.9) !important;
+  }
+
+  :global([class*="bg-[#d3d2b7]"]) {
+      background-color: rgba(211, 210, 183, 0.9) !important;
+  }
+
+  /* Add these new styles for the check effect */
+  .king-in-check {
+      animation: check-pulse 1.5s ease-in-out infinite;
+      text-shadow: 
+          0 0 5px #ff0000,
+          0 0 10px #ff0000,
+          0 0 15px #ff0000 !important;
+  }
+
+  @keyframes check-pulse {
+      0% {
+          transform: scale(1);
+          filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.7));
+      }
+      50% {
+          transform: scale(1.1);
+          filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.9));
+      }
+      100% {
+          transform: scale(1);
+          filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.7));
+      }
+  }
+
+  /* Update existing piece styles to work with the check effect */
+  .chess-piece {
+      transform: scale(1.1);
+      transition: transform 0.2s ease-in-out;
+      will-change: transform, filter;
+  }
+
+  .white-piece.king-in-check {
+      color: #fff;
+      text-shadow: 
+          0 0 5px #ff0000,
+          0 0 10px #ff0000,
+          0 0 15px #ff0000 !important;
+  }
+
+  .black-piece.king-in-check {
+      color: #000;
+      text-shadow: 
+          0 0 5px #ff0000,
+          0 0 10px #ff0000,
+          0 0 15px #ff0000 !important;
+  }
+
+  /* Add these new styles for better coordinate alignment */
+  .grid-coordinates {
+      display: grid;
+      grid-template-columns: 2rem repeat(8, 1fr) 2rem;
+  }
+
+  /* Ensure rank numbers are properly centered */
+  .w-8 {
+      width: 2rem;
+  }
+
+  .h-full {
+      height: 100%;
+  }
+
+  /* Make the move history section more compact */
+  .move-history {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 1rem;
+  }
+
+  /* Update container styles */
+  .chessboard-container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      min-height: 400px;
+  }
+
+  /* Update move history styles */
+  .move-history {
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+  }
+
+  /* Mobile-specific styles */
+  @media (max-width: 768px) {
+      .move-history {
+          transition: height 0.3s ease-in-out;
+          max-height: 200px;
+      }
+
+      .history-collapsed .move-history {
+          height: 0;
+          overflow: hidden;
+      }
+  }
+
+  /* Remove desktop collapse styles */
+  @media (min-width: 769px) {
+      .history-collapsed .chess-piece {
+          font-size: inherit;
+      }
+
+      .history-collapsed .move-history {
+          opacity: 1;
+          pointer-events: auto;
       }
   }
 </style>
