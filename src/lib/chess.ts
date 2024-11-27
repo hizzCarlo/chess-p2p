@@ -652,3 +652,12 @@ export function isFiftyMoveRule(moveHistory: string[]): boolean {
     
     return false;
 }
+// Add this new export function to check if a specific king is in check
+export function isKingInCheckPosition(
+    board: string[][],
+    position: Position,
+    kingColor: 'white' | 'black',
+    gameState: GameState
+): boolean {
+    return isKingInCheck(board, position, kingColor, gameState);
+}
