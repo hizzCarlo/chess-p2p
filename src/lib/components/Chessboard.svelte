@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount, createEventDispatcher } from 'svelte';
     import type { Position, Piece } from '$lib/chess';
-    import { isValidMove, getPieceFromNotation, PIECE_SYMBOLS, handlePawnPromotion, isCheckmate, getPossibleMoves, isStalemate, hasInsufficientMaterial, isThreefoldRepetition, isFiftyMoveRule } from '$lib/chess';
+    import { isValidMove, getPieceFromNotation, PIECE_SYMBOLS, handlePawnPromotion, isCheckmate, getPossibleMoves, isStalemate, hasInsufficientMaterial, isThreefoldRepetition, isFiftyMoveRule, isKingInCheckPosition } from '$lib/chess';
     
     const dispatch = createEventDispatcher();
     
