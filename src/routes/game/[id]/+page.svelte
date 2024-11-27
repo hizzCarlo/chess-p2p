@@ -72,7 +72,7 @@
     }
 
     async function handleBack() {
-        if (!gameEnded) {  // Only try to end the match if it's not already ended
+        if (!gameEnded) {
             try {
                 const response = await fetch(`https://www.formalytics.me/api-chess/match-end/${matchId}`, {
                     method: 'PUT',
@@ -91,9 +91,8 @@
             }
         }
 
-        // Use import.meta.env instead of process.env
         const basePath = import.meta.env.PROD ? '/chess-p2p' : '';
-        await goto(`${basePath}/`);
+        window.location.href = `${basePath}/`;
     }
 
     function handleGameOver(event: CustomEvent) {
