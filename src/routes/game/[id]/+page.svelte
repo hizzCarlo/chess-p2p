@@ -5,7 +5,7 @@
     import { onMount } from 'svelte';
     import { PIECE_SYMBOLS } from '$lib/chess';
     import '../../../lib/styles/animated-bg.css';
-    
+    // test
     const matchId = $page.params.id;
     let whitePlayerId: string;
     let blackPlayerId: string;
